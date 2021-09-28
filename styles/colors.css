@@ -1,0 +1,54 @@
+:root {
+    --rich-black: #0A0908;
+    --gray-1: #333333;
+    --gray-2: #4F4F4F;
+    --gray-3: #828282;
+    --gray-4: #BDBDBD;
+    --gray-5: #E0E0E0;
+    --gray-6: #F2F2F2;
+    --gunmetal: #22333B;
+    --ghost-white: #FAFAFA;
+    --froly: #F0787E;
+    --carolina-blue: #4FA3E3;
+    --inchworm: #A3E34F;
+    --orange-soda: #F06543;
+    --minion-yellow: #F0D942;
+
+    --bg-color: var(--ghost-white);
+    --bg-color-2: var(--gray-6);
+    --bg-color-3: var(--gray-5);
+    --card-color: var(--ghost-white);
+    
+    /* TEXT */
+    --color-primary: var(--carolina-blue);
+    --color-secondary: var(--orange-soda);
+    --main-text: var(--rich-black);
+    --main-text-2: var(--gray-1);
+    --main-text-3: var(--gray-2);
+}
+
+.text-yellow {
+    color: var(--minion-yellow);
+}
+
+.text-blue {
+    color: var(--carolina-blue);
+}
+
+.text-red {
+    color: var(--froly);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: var(--gray-1);
+        --bg-color-2: var(--gray-2);
+        --bg-color-3: var(--gray-3);
+        --card-color: var(--gray-2);
+
+        /* TEXT */
+        --main-text: var(--ghost-white);
+        --main-text-2: var(--gray-4);
+        --main-text-3: var(--gray-5);
+    }
+}
