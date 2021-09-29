@@ -28,11 +28,3 @@
 .boardGame.boardSize3 {
     @apply grid-cols-3 grid-rows-3;
 }
-
-.boardGame.boardSize6 {
-    @apply grid-cols-6 grid-rows-6;
-}
-
-.boardGame.boardSize9 {
-    @apply grid-cols-9 grid-rows-9;
-}

@@ -1,6 +1,5 @@
 import {
-  ChangeEvent,
-  KeyboardEvent, MouseEvent, useEffect, useRef, useState,
+  KeyboardEvent, MouseEvent, useEffect, useState,
 } from 'react';
 
 import useTimer from '../hooks/useTimer';
@@ -63,11 +62,6 @@ export default function TicTacToe() {
     formattedTime, resetTimer, stopTimer,
   } = useTimer();
 
-  const {
-    formattedTime: overallFormattedTime, stopTimer: overallStopTimer,
-  } = useTimer();
-
-  const statisticsRef = useRef(null);
   const [status, setStatus] = useState<GameStatus>(GameStatus.NONE);
   const [history, setHistory] = useState<string[]>([]);
   const [score, setScore] = useState<Score>(DEFAULT_SCORE);
@@ -100,6 +94,10 @@ export default function TicTacToe() {
     setStatus(GameStatus.NONE);
     resetTimer();
   };
+
+  useEffect(() => {
+    resetGame();
+  }, []);
 
   const checkDraw = () => board.every((row) => row.every((cell) => cell !== BoardCell.EMPTY));
 
@@ -153,12 +151,7 @@ export default function TicTacToe() {
 
   const finishGame = () => {
     setStatus(GameStatus.END);
-    overallStopTimer();
     stopTimer();
-
-    setTimeout(() => {
-      statisticsRef.current.scrollIntoView();
-    }, 2000);
   };
 
   const updateGame = () => {
@@ -271,109 +264,6 @@ export default function TicTacToe() {
     </div>
   );
 
-  const renderPlayedMatches = () => (
-    <div className="flex flex-col w-full items-center">
-      <p className="font-bold text-xl mb-5">Played matches</p>
-      <div className="flex flex-row w-full justify-center">
-        {Array(MAX_MATCHES).fill(Number).map((_, index) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <div key={`played-matches-${index}`} className={`h-6 w-6 border border-dusty-gray rounded-full ${index + 1 <= history.length ? 'bg-dusty-gray' : ''} mx-0.5`} />
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderGameHistory = () => (
-    <div className="flex flex-col w-full mt-6 items-center">
-      <p className="font-bold text-xl mb-5">Game history</p>
-      <div className="flex flex-row w-full justify-center items-center">
-        {Array(MAX_MATCHES).fill(Number).map((_, index) => {
-          const historyValue = history.slice(-MAX_MATCHES)[index];
-          const formattedValue = historyValue === GameStatus.DRAW ? 'D' : `P${PLAYERS[historyValue]}`;
-
-          return (
-          // eslint-disable-next-line react/no-array-index-key
-            <div key={`played-history-${index}`} className="h-7 w-7 border border-dusty-gray mx-0.5 flex items-center justify-center text-sm">
-              {historyValue ? formattedValue : ''}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const getPercentageBubbleColor = (value: number) => {
-    if (value >= 75) {
-      return 'high';
-    }
-
-    if (value >= 50) {
-      return 'medium';
-    }
-
-    return 'low';
-  };
-
-  const renderPlayerGameVictories = () => {
-    const total = score.X + score.O;
-
-    const scorePercentages = {};
-
-    Object.keys(PLAYERS).forEach((key) => {
-      const wins = Math.round((score[key] / total) * 100);
-      const losses = Math.round(((total - score[key]) / total) * 100);
-
-      scorePercentages[key] = {
-        wins: Number.isNaN(wins) ? 0 : wins,
-        losses: Number.isNaN(losses) ? 0 : losses,
-      };
-    });
-
-    return (
-      <div className="mb-10 md:mb-0 w-full md:w-1/2">
-        <p className="font-bold text-xl mb-5">Game victories %</p>
-        <div className="flex flex-row items-center justify-between">
-          {Object.keys(PLAYERS).map((key) => (
-            <div className="flex flex-col w-full items-center justify-center" key={`game-victories-${key}`}>
-              <p className="text-2xl mb-3">
-                Player
-                {' '}
-                {PLAYERS[key]}
-              </p>
-              <div className="flex flex-row justify-between w-4/5 md:w-1/2">
-                <div className="flex flex-col">
-                  <span className={`${styles.percentageBubbles} ${styles[getPercentageBubbleColor(scorePercentages[key].wins)]}`}>
-                    {scorePercentages[key].wins}
-                    %
-                  </span>
-                  <span className="text-md">V</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className={styles.percentageBubbles}>
-                    {scorePercentages[key].losses}
-                    %
-                  </span>
-                  <span className="text-md">L</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    resetGame();
-  }, [size]);
-
-  const handleSizeChange = (evt: ChangeEvent<HTMLSelectElement>) => {
-    const { currentTarget } = evt;
-    const { value } = currentTarget;
-
-    setSize(+value);
-  };
-
   const renderPlayerScore = (playerToRender: BoardCell) => (
     <>
       <p className="font-bold text-3xl mb-3">
@@ -385,22 +275,11 @@ export default function TicTacToe() {
     </>
   );
 
-  const renderSizeDropdown = () => (
-    <select className="mb-6 px-3 py-1 bg-dusty-gray text-white rounded text-xl" onChange={handleSizeChange}>
-      <option value={3}>3 x 3</option>
-      <option value={6}>6 x 6</option>
-      <option value={9}>9 x 9</option>
-    </select>
-  );
-
   return (
     <div>
       <section className="bg-porcelain-white py-16 text-center px-4 md:px-section h-screen flex flex-col justify-center">
         <h2 className="font-bold text-3xl mb-5">Tic tac toe games</h2>
         <p className="text-xl mb-6">Welcome to the best game in the world.</p>
-        <div>
-          {renderSizeDropdown()}
-        </div>
         <div className="flex flex-row flex-wrap justify-between items-center w-full">
           <div className="hidden md:block">
             {renderPlayerScore(BoardCell.X)}
@@ -419,21 +298,6 @@ export default function TicTacToe() {
           </div>
         </div>
         <p className="mt-10 text-2xl md:text-3xl">{formattedTime}</p>
-      </section>
-      <section ref={statisticsRef} className="bg-white py-16 text-center px-8 md:px-section" id="statistics">
-        <h2 className="font-bold text-3xl mb-5">Awesome Statistics</h2>
-        <p className="text-xl mb-6">All statistics in one place!</p>
-        <div className="flex flex-col md:flex-row justify-between items-center my-12">
-          {renderPlayerGameVictories()}
-          <div className="flex flex-col">
-            {renderPlayedMatches()}
-            {renderGameHistory()}
-          </div>
-        </div>
-        <div>
-          <p className="font-bold text-xl md:text-3xl mb-2 md:mb-7">Total time</p>
-          <span className="mt-10 text-xl md:text-3xl">{overallFormattedTime}</span>
-        </div>
       </section>
     </div>
   );
