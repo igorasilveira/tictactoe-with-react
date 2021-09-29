@@ -1,0 +1,38 @@
+.canvasContainer {
+    height: 300px;
+    width: 300px;
+
+    @apply bg-white border border-alto-gray;
+}
+
+.percentageBubbles {
+    @apply h-12 w-12 text-xl bg-dusty-gray rounded-full mb-1 flex flex-row justify-center items-center text-white font-bold;
+}
+
+.percentageBubbles.medium {
+    @apply bg-buttercup-yellow;
+}
+
+.percentageBubbles.high {
+    @apply bg-caribbean-green;
+}
+
+.percentageBubbles.low {
+    @apply bg-fuzzy-brown;
+}
+
+.boardGame {
+    @apply h-full w-full bg-white grid;
+}
+
+.boardGame.boardSize3 {
+    @apply grid-cols-3 grid-rows-3;
+}
+
+.boardGame.boardSize6 {
+    @apply grid-cols-6 grid-rows-6;
+}
+
+.boardGame.boardSize9 {
+    @apply grid-cols-9 grid-rows-9;
+}

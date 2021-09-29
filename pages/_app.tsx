@@ -1,15 +1,15 @@
-import { ReactNode } from 'react';
 import { AppProps } from 'next/app';
-import { Router } from 'next/dist/client/router';
+
+import Layout from '../components/Layout';
 
 import '../styles/global.css';
 
-import * as gtag from '../lib/gtag';
-
-Router.events.on('routeChangeComplete', (url) => gtag.pageview(url));
-
-function App({ Component, pageProps }: AppProps): ReactNode {
-  return <Component {...pageProps} />;
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
+  );
 }
 
-export default App;
+export default MyApp;
