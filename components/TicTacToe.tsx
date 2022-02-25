@@ -42,6 +42,8 @@ interface Cell {
     column: number;
 }
 
+type PlayerBoardCell = BoardCell.O | BoardCell.X;
+
 const MAX_MATCHES = 9;
 const DEFAULT_SIZE = 3;
 const CELL_ID_DELIMITOR = '-';
@@ -58,6 +60,13 @@ const PLAYERS = {
   [BoardCell.O]: 2,
 };
 
+const DEFAULT_CONTAINERS: AlongContainers = {
+  rows: [0, 0, 0],
+  columns: [0, 0, 0],
+  diagonal: [0, 0, 0],
+  oppositeDiagonal: [0, 0, 0],
+};
+
 export default function TicTacToe() {
   const {
     formattedTime, resetTimer, stopTimer,
@@ -67,13 +76,16 @@ export default function TicTacToe() {
     formattedTime: overallFormattedTime, stopTimer: overallStopTimer,
   } = useTimer();
 
-  const statisticsRef = useRef(null);
+  const statisticsRef = useRef<null | HTMLDivElement>(null);
   const [status, setStatus] = useState<GameStatus>(GameStatus.NONE);
   const [history, setHistory] = useState<string[]>([]);
   const [score, setScore] = useState<Score>(DEFAULT_SCORE);
   const [player, setPlayer] = useState<string>(DEFAULT_PLAYER);
   const [size, setSize] = useState<number>(DEFAULT_SIZE);
-  const [containers, setContainers] = useState<PlayerContainers>(null);
+  const [containers, setContainers] = useState<PlayerContainers>({
+    O: DEFAULT_CONTAINERS,
+    X: DEFAULT_CONTAINERS,
+  });
   const [winningCells, setWinningCells] = useState<Cell[]>([]);
   const [board, setBoard] = useState<string[][]>([]);
 
@@ -104,7 +116,7 @@ export default function TicTacToe() {
   const checkDraw = () => board.every((row) => row.every((cell) => cell !== BoardCell.EMPTY));
 
   const checkWinner = () => {
-    const currentPlayerContainers: AlongContainers = containers[player];
+    const currentPlayerContainers: AlongContainers = containers[player as PlayerBoardCell];
 
     const winningRow = currentPlayerContainers.rows.findIndex((row) => row === size);
     if (winningRow > -1) {
@@ -157,7 +169,7 @@ export default function TicTacToe() {
     stopTimer();
 
     setTimeout(() => {
-      statisticsRef.current.scrollIntoView();
+      statisticsRef.current?.scrollIntoView();
     }, 2000);
   };
 
@@ -167,10 +179,10 @@ export default function TicTacToe() {
 
       setTimeout(() => {
         // setStatus(GameStatus.WIN);
-        setScore({ ...score, [player]: score[player] + 1 });
+        setScore({ ...score, [player as PlayerBoardCell]: score[player as PlayerBoardCell] + 1 });
         setHistory([...history, player]);
 
-        if (score[player] + 1 > MAX_MATCHES / 2) {
+        if (score[player as PlayerBoardCell] + 1 > MAX_MATCHES / 2) {
           finishGame();
           return;
         }
@@ -203,15 +215,15 @@ export default function TicTacToe() {
     }
 
     const newContainers: PlayerContainers = { ...containers };
-    newContainers[player].rows[rowIndex] += 1;
-    newContainers[player].columns[colIndex] += 1;
+    newContainers[player as PlayerBoardCell].rows[+rowIndex] += 1;
+    newContainers[player as PlayerBoardCell].columns[+colIndex] += 1;
 
     if (colIndex === rowIndex) {
-      newContainers[player].diagonal[colIndex] += 1;
+      newContainers[player as PlayerBoardCell].diagonal[+colIndex] += 1;
     }
 
     if ((+colIndex + +rowIndex === size - 1)) {
-      newContainers[player].oppositeDiagonal[colIndex] += 1;
+      newContainers[player as PlayerBoardCell].oppositeDiagonal[+colIndex] += 1;
     }
 
     setContainers(newContainers);
@@ -230,7 +242,8 @@ export default function TicTacToe() {
 
     const textMapper = {
       [GameStatus.DRAW]: 'Draw',
-      [GameStatus.END]: `Congrats Player ${PLAYERS[player]}`,
+      [GameStatus.END]: `Congrats Player ${PLAYERS[player as PlayerBoardCell]}`,
+      [GameStatus.WIN]: 'Game Over',
     };
 
     if (!textMapper[status]) {
@@ -289,7 +302,7 @@ export default function TicTacToe() {
       <div className="flex flex-row w-full justify-center items-center">
         {Array(MAX_MATCHES).fill(Number).map((_, index) => {
           const historyValue = history.slice(-MAX_MATCHES)[index];
-          const formattedValue = historyValue === GameStatus.DRAW ? 'D' : `P${PLAYERS[historyValue]}`;
+          const formattedValue = historyValue === GameStatus.DRAW ? 'D' : `P${PLAYERS[historyValue as PlayerBoardCell]}`;
 
           return (
           // eslint-disable-next-line react/no-array-index-key
@@ -317,13 +330,22 @@ export default function TicTacToe() {
   const renderPlayerGameVictories = () => {
     const total = score.X + score.O;
 
-    const scorePercentages = {};
+    const scorePercentages = {
+      [BoardCell.X]: {
+        wins: 0,
+        losses: 0,
+      },
+      [BoardCell.O]: {
+        wins: 0,
+        losses: 0,
+      },
+    };
 
     Object.keys(PLAYERS).forEach((key) => {
-      const wins = Math.round((score[key] / total) * 100);
-      const losses = Math.round(((total - score[key]) / total) * 100);
+      const wins = Math.round((score[key as PlayerBoardCell] / total) * 100);
+      const losses = Math.round(((total - score[key as PlayerBoardCell]) / total) * 100);
 
-      scorePercentages[key] = {
+      scorePercentages[key as PlayerBoardCell] = {
         wins: Number.isNaN(wins) ? 0 : wins,
         losses: Number.isNaN(losses) ? 0 : losses,
       };
@@ -338,19 +360,19 @@ export default function TicTacToe() {
               <p className="text-2xl mb-3">
                 Player
                 {' '}
-                {PLAYERS[key]}
+                {PLAYERS[key as PlayerBoardCell]}
               </p>
               <div className="flex flex-row justify-between w-4/5 md:w-1/2">
                 <div className="flex flex-col">
-                  <span className={`${styles.percentageBubbles} ${styles[getPercentageBubbleColor(scorePercentages[key].wins)]}`}>
-                    {scorePercentages[key].wins}
+                  <span className={`${styles.percentageBubbles} ${styles[getPercentageBubbleColor(scorePercentages[key as PlayerBoardCell].wins)]}`}>
+                    {scorePercentages[key as PlayerBoardCell].wins}
                     %
                   </span>
                   <span className="text-md">V</span>
                 </div>
                 <div className="flex flex-col">
                   <span className={styles.percentageBubbles}>
-                    {scorePercentages[key].losses}
+                    {scorePercentages[key as PlayerBoardCell].losses}
                     %
                   </span>
                   <span className="text-md">L</span>
@@ -379,9 +401,9 @@ export default function TicTacToe() {
       <p className="font-bold text-3xl mb-3">
         Player
         {' '}
-        {PLAYERS[playerToRender]}
+        {PLAYERS[playerToRender as PlayerBoardCell]}
       </p>
-      <p className="text-5xl md:text-7xl">{score[playerToRender]}</p>
+      <p className="text-5xl md:text-7xl">{score[playerToRender as PlayerBoardCell]}</p>
     </>
   );
 

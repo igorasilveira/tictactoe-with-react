@@ -3,13 +3,15 @@ import { useEffect, useState } from 'react';
 const useTimer = (start = true) => {
   const [time, setTime] = useState<number>(0);
   const [formattedTime, setFormattedTime] = useState<string>('00:00:00');
-  const [intervalID, setIntervalID] = useState(null);
+  const [intervalID, setIntervalID] = useState<number>();
 
   const startTimer = () => {
-    setIntervalID(setInterval(() => {
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      setTime((time) => time + 1);
-    }, 1000));
+    if (typeof window !== 'undefined') {
+      setIntervalID(window.setInterval(() => {
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        setTime((time) => time + 1);
+      }, 1000));
+    }
   };
 
   const formatTimeHHMMSS = () => {
